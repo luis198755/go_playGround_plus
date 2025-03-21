@@ -1,0 +1,22 @@
+{
+  "hello-world": {
+    "name": "Hello World",
+    "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, World!\")\n}",
+    "mode": "go"
+  },
+  "for-loop": {
+    "name": "For Loop Example",
+    "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfor i := 0; i < 5; i++ {\n\t\tfmt.Printf(\"Iteration %d\\n\", i)\n\t}\n}",
+    "mode": "go"
+  },
+  "simple-json": {
+    "name": "Simple JSON",
+    "code": "{\n  \"name\": \"John Doe\",\n  \"age\": 30,\n  \"city\": \"New York\"\n}",
+    "mode": "json"
+  },
+  "nested-json": {
+    "name": "Nested JSON",
+    "code": "{\n  \"user\": {\n    \"name\": \"John Doe\",\n    \"contacts\": {\n      \"email\": \"john@example.com\",\n      \"phone\": \"+1234567890\"\n    },\n    \"interests\": [\"coding\", \"reading\", \"music\"]\n  },\n  \"settings\": {\n    \"theme\": \"dark\",\n    \"notifications\": true\n  }\n}",
+    "mode": "json"
+  }
+}

@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background-color: #00FF00;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.markdown-preview {
+  @apply text-white;
+}
+
+.markdown-preview h1 {
+  @apply text-3xl font-bold mb-4 text-white;
+}
+
+.markdown-preview h2 {
+  @apply text-2xl font-bold mb-3 text-white;
+}
+
+.markdown-preview h3 {
+  @apply text-xl font-bold mb-2 text-white;
+}
+
+.markdown-preview h4 {
+  @apply text-lg font-bold mb-2 text-white;
+}
+
+.markdown-preview p {
+  @apply mb-4 text-gray-300;
+}
+
+.markdown-preview ul {
+  @apply list-disc list-inside mb-4 text-gray-300;
+}
+
+.markdown-preview ol {
+  @apply list-decimal list-inside mb-4 text-gray-300;
+}
+
+.markdown-preview li {
+  @apply mb-1;
+}
+
+.markdown-preview a {
+  @apply text-blue-400 hover:text-blue-300 underline;
+}
+
+.markdown-preview blockquote {
+  @apply border-l-4 border-gray-600 pl-4 my-4 italic text-gray-400;
+}
+
+.markdown-preview code {
+  @apply bg-gray-800 px-1 py-0.5 rounded text-sm font-mono text-gray-300;
+}
+
+.markdown-preview pre {
+  @apply bg-gray-800 p-4 rounded-lg mb-4 overflow-x-auto;
+}
+
+.markdown-preview pre code {
+  @apply bg-transparent p-0;
+}
+
+.markdown-preview img {
+  @apply max-w-full h-auto rounded-lg mb-4;
+}
+
+.markdown-preview hr {
+  @apply my-8 border-gray-700;
+}
+
+.markdown-preview table {
+  @apply w-full mb-4 border-collapse;
+}
+
+.markdown-preview th {
+  @apply bg-gray-800 text-left p-2 border border-gray-700;
+}
+
+.markdown-preview td {
+  @apply p-2 border border-gray-700;
+}
+
+.markdown-preview strong {
+  @apply font-bold text-white;
+}
+
+.markdown-preview em {
+  @apply italic text-gray-300;
+}
+
+.markdown-preview del {
+  @apply line-through text-gray-500;
+}

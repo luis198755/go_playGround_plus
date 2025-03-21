@@ -1,0 +1,26 @@
+{
+  "simple-person": {
+    "name": "Simple Person Object",
+    "code": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"age\": 30,\n  \"email\": \"john.doe@example.com\",\n  \"isEmployed\": true\n}"
+  },
+  "address-book": {
+    "name": "Address Book",
+    "code": "{\n  \"contacts\": [\n    {\n      \"id\": 1,\n      \"name\": \"Alice Johnson\",\n      \"phone\": \"+1-555-123-4567\",\n      \"email\": \"alice@example.com\",\n      \"address\": {\n        \"street\": \"123 Main St\",\n        \"city\": \"Boston\",\n        \"state\": \"MA\",\n        \"zipCode\": \"02108\"\n      }\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Bob Smith\",\n      \"phone\": \"+1-555-987-6543\",\n      \"email\": \"bob@example.com\",\n      \"address\": {\n        \"street\": \"456 Oak Ave\",\n        \"city\": \"San Francisco\",\n        \"state\": \"CA\",\n        \"zipCode\": \"94102\"\n      }\n    }\n  ],\n  \"lastUpdated\": \"2024-03-15T14:30:00Z\"\n}"
+  },
+  "product-catalog": {
+    "name": "Product Catalog",
+    "code": "{\n  \"categories\": [\n    {\n      \"id\": \"electronics\",\n      \"name\": \"Electronics\",\n      \"products\": [\n        {\n          \"id\": \"e001\",\n          \"name\": \"Smartphone\",\n          \"price\": 699.99,\n          \"specs\": {\n            \"brand\": \"TechCo\",\n            \"model\": \"X2000\",\n            \"storage\": \"128GB\",\n            \"colors\": [\"black\", \"silver\", \"gold\"]\n          },\n          \"inStock\": true\n        },\n        {\n          \"id\": \"e002\",\n          \"name\": \"Laptop\",\n          \"price\": 1299.99,\n          \"specs\": {\n            \"brand\": \"TechCo\",\n            \"model\": \"ProBook\",\n            \"processor\": \"Intel i7\",\n            \"ram\": \"16GB\",\n            \"storage\": \"512GB SSD\",\n            \"colors\": [\"silver\", \"space gray\"]\n          },\n          \"inStock\": false\n        }\n      ]\n    }\n  ],\n  \"currency\": \"USD\",\n  \"version\": \"2.1\"\n}"
+  },
+  "social-media": {
+    "name": "Social Media Post",
+    "code": "{\n  \"post\": {\n    \"id\": \"p123456\",\n    \"author\": {\n      \"id\": \"u789\",\n      \"username\": \"@techie\",\n      \"displayName\": \"Tech Enthusiast\",\n      \"verified\": true\n    },\n    \"content\": \"Just launched my new app! #coding #tech\",\n    \"timestamp\": \"2024-03-15T10:30:00Z\",\n    \"likes\": 1542,\n    \"comments\": [\n      {\n        \"id\": \"c1\",\n        \"author\": {\n          \"id\": \"u456\",\n          \"username\": \"@dev123\",\n          \"displayName\": \"Developer\"\n        },\n        \"content\": \"Congratulations! 🎉\",\n        \"timestamp\": \"2024-03-15T10:35:00Z\",\n        \"likes\": 23\n      }\n    ],\n    \"tags\": [\"coding\", \"tech\"],\n    \"media\": {\n      \"type\": \"image\",\n      \"url\": \"https://example.com/images/app-launch.jpg\",\n      \"alt\": \"App Screenshot\"\n    }\n  }\n}"
+  },
+  "configuration": {
+    "name": "App Configuration",
+    "code": "{\n  \"app\": {\n    \"name\": \"MyApp\",\n    \"version\": \"1.0.0\",\n    \"environment\": \"production\",\n    \"features\": {\n      \"darkMode\": true,\n      \"notifications\": true,\n      \"analytics\": true\n    },\n    \"api\": {\n      \"baseUrl\": \"https://api.example.com\",\n      \"version\": \"v2\",\n      \"timeout\": 5000,\n      \"retryAttempts\": 3\n    },\n    \"cache\": {\n      \"enabled\": true,\n      \"duration\": 3600,\n      \"maxSize\": \"100MB\"\n    },\n    \"logging\": {\n      \"level\": \"info\",\n      \"outputs\": [\"console\", \"file\"],\n      \"file\": {\n        \"path\": \"/var/log/myapp.log\",\n        \"maxSize\": \"10MB\",\n        \"rotate\": true\n      }\n    }\n  }\n}"
+  },
+  "weather-data": {
+    "name": "Weather Data",
+    "code": "{\n  \"location\": {\n    \"city\": \"New York\",\n    \"country\": \"USA\",\n    \"coordinates\": {\n      \"latitude\": 40.7128,\n      \"longitude\": -74.0060\n    }\n  },\n  \"current\": {\n    \"timestamp\": \"2024-03-15T12:00:00Z\",\n    \"temperature\": {\n      \"celsius\": 22,\n      \"fahrenheit\": 71.6\n    },\n    \"humidity\": 65,\n    \"windSpeed\": {\n      \"kph\": 15,\n      \"mph\": 9.3\n    },\n    \"conditions\": [\"partly cloudy\"],\n    \"precipitation\": {\n      \"probability\": 20,\n      \"type\": \"rain\"\n    }\n  },\n  \"forecast\": [\n    {\n      \"date\": \"2024-03-16\",\n      \"high\": {\n        \"celsius\": 24,\n        \"fahrenheit\": 75.2\n      },\n      \"low\": {\n        \"celsius\": 18,\n        \"fahrenheit\": 64.4\n      },\n      \"conditions\": [\"sunny\"]\n    },\n    {\n      \"date\": \"2024-03-17\",\n      \"high\": {\n        \"celsius\": 23,\n        \"fahrenheit\": 73.4\n      },\n      \"low\": {\n        \"celsius\": 17,\n        \"fahrenheit\": 62.6\n      },\n      \"conditions\": [\"rain\", \"windy\"]\n    }\n  ]\n}"
+  }
+}

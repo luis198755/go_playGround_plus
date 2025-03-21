@@ -1,0 +1,14 @@
+{
+  "basic-markdown": {
+    "name": "Basic Markdown",
+    "code": "# Welcome to Markdown\n\nThis is a basic markdown example.\n\n## Features\n\n- **Bold text**\n- *Italic text*\n- ~~Strikethrough~~\n\n### Code Example\n\n```go\nfunc main() {\n    fmt.Println(\"Hello, World!\")\n}\n```\n\n#### Links and Images\n\n[Visit Go Website](https://go.dev)\n\n![Go Gopher](https://go.dev/blog/gopher/gopher.png)\n"
+  },
+  "documentation": {
+    "name": "Documentation Example",
+    "code": "# Project Documentation\n\n## Overview\n\nThis project is a web-based playground for Go programming.\n\n## Features\n\n1. Real-time code execution\n2. Multiple editor modes:\n   - Go Playground\n   - JSON Viewer\n   - Markdown Editor\n\n## Installation\n\n```bash\nnpm install\nnpm run dev\n```\n\n## Usage\n\nSimply write your code and click the Run button.\n\n> Note: Make sure to follow the security guidelines.\n\n## License\n\nMIT License"
+  },
+  "blog-post": {
+    "name": "Blog Post Example",
+    "code": "# Getting Started with Go\n\n_Published on March 15, 2024_\n\nGo is a statically typed, compiled programming language designed at Google.\n\n## Why Go?\n\nGo offers several advantages:\n\n1. Simple and clean syntax\n2. Built-in concurrency support\n3. Fast compilation\n4. Excellent standard library\n\n### Example\n\nHere's a simple Go program:\n\n```go\npackage main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"Welcome to Go!\")\n}\n```\n\n## Conclusion\n\nGo is an excellent choice for modern software development.\n\n---\n\nTags: #golang #programming #tutorial"
+  }
+}

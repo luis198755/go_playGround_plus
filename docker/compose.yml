@@ -1,0 +1,23 @@
+services:
+  web:
+    build:
+      context: ${WEB_BUILD_CONTEXT}
+      dockerfile: Dockerfile
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    volumes:
+      - ${WEB_VOLUME_SOURCE}:${WEB_VOLUME_TARGET}:ro
+    tmpfs:
+      - /tmp:exec,mode=777
+      - /home/appuser/.cache:exec,mode=777  # Añade acceso de escritura para la caché de Go
+    environment:
+      - PORT=${WEB_PORT}
+    restart: ${WEB_RESTART_POLICY}
+    read_only: true
+    networks:
+      - ${WEB_NETWORK}
+
+networks:
+  centurion_network:
+    name: ${CENTURION_NETWORK}
+    driver: bridge
