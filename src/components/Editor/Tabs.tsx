@@ -15,11 +15,11 @@ export const Tabs = ({ tabs, activeTabId, onTabChange, onTabClose, onNewTab, mod
   const filteredTabs = tabs.filter(tab => tab.mode === mode);
 
   return (
-    <div className="flex items-center border-b border-gray-700 bg-[#252526] overflow-x-auto">
+    <div className="flex items-center border-b border-gray-700 bg-[#252526] h-9">
       {filteredTabs.map((tab) => (
         <div
           key={tab.id}
-          className={`group flex items-center min-w-[120px] max-w-[200px] h-9 px-3 
+          className={`group flex items-center w-[120px] h-9 px-3 
             ${activeTabId === tab.id ? 'bg-[#1e1e1e] text-white' : 'bg-[#2d2d2d] text-gray-400'} 
             cursor-pointer border-r border-gray-700 hover:text-white transition-colors`}
           onClick={() => onTabChange(tab.id)}
