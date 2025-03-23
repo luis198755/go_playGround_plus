@@ -4,16 +4,31 @@ import { TerminalOutputProps } from '../../types';
 
 export function TerminalOutput({ output, isLoading, onClear, isMarkdown = false }: TerminalOutputProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [userInput, setUserInput] = useState('');
   const [showPrompt, setShowPrompt] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [contentHeight, setContentHeight] = useState(0);
 
   useEffect(() => {
     if (terminalRef.current) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [output, userInput]);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (contentRef.current) {
+        const height = contentRef.current.scrollHeight;
+        setContentHeight(height + 100); // Add padding for better visibility
+      }
+    };
+
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, [output]);
 
   const handleDownload = () => {
     try {
@@ -67,14 +82,14 @@ export function TerminalOutput({ output, isLoading, onClear, isMarkdown = false 
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={{ minHeight: `${contentHeight}px` }}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-sm text-gray-400 font-medium">
           <Terminal size={16} />
           Terminal Output
         </div>
       </div>
-      <div className="flex-1 bg-[#0C0C0C] rounded-lg overflow-hidden border border-[#333] flex flex-col min-h-0">
+      <div className="flex-1 bg-[#0C0C0C] rounded-lg overflow-hidden border border-[#333] flex flex-col min-h-0 h-full">
         <div className="bg-[#1A1A1A] px-4 py-2 flex items-center gap-2 border-b border-[#333]">
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
@@ -122,7 +137,7 @@ export function TerminalOutput({ output, isLoading, onClear, isMarkdown = false 
               dangerouslySetInnerHTML={{ __html: output }}
             />
           ) : (
-            <div className="text-[#00FF00] space-y-1">
+            <div ref={contentRef} className="text-[#00FF00] space-y-1">
               {output.split('\n')
                 .filter(line => line.trim())
                 .map((line, i) => (

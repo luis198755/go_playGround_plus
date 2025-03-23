@@ -209,7 +209,7 @@ function App() {
     <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col">
       <Navbar mode={mode} onModeChange={handleModeChangeWithClear} />
       <div className="container mx-auto p-4 pt-6 flex-1">
-        <div className="bg-[#2d2d2d] rounded-lg overflow-hidden flex flex-col h-[calc(100vh-8rem)]">
+        <div className="bg-[#2d2d2d] rounded-lg overflow-hidden flex flex-col min-h-[calc(100vh-8rem)]">
 
           <div className="flex flex-col md:flex-row flex-1 gap-4 overflow-hidden">
             <div className="flex flex-col gap-4 md:w-1/2">
@@ -309,8 +309,8 @@ function App() {
             </div>
 
             {/* Terminal Output Section */}
-            <div className="w-full md:w-1/2 p-2 flex flex-col flex-1 overflow-hidden">
-              <div className="h-full flex flex-col">
+            <div className="w-full md:w-1/2 p-2 flex flex-col flex-1 overflow-visible">
+              <div className="flex flex-col">
                 <TerminalOutput
                   output={output}
                   isLoading={isLoading}
