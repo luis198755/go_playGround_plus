@@ -1,4 +1,4 @@
-import { Settings } from 'lucide-react';
+import { Settings, X } from 'lucide-react';
 import { EditorSettings as EditorSettingsType } from '../../types';
 
 interface EditorSettingsProps {
@@ -25,6 +25,16 @@ export function EditorSettings({ settings, onSettingsChange }: EditorSettingsPro
         aria-labelledby="editor-settings-button"
       >
         <div className="p-2 space-y-3">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs text-gray-400 font-medium">Editor Settings</span>
+            <button
+              onClick={() => onSettingsChange({ ...settings, isSettingsOpen: false })}
+              className="p-1 rounded hover:bg-[#3d3d3d] text-gray-400 hover:text-white transition-colors"
+              title="Close settings"
+            >
+              <X size={14} />
+            </button>
+          </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1">Theme</label>
             <select
