@@ -209,109 +209,115 @@ function App() {
     <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col">
       <Navbar mode={mode} onModeChange={handleModeChangeWithClear} />
       <div className="container mx-auto p-4 pt-6 flex-1">
-        <div className="bg-[#2d2d2d] rounded-lg overflow-hidden flex flex-col h-[calc(100vh-12rem)]">
+        <div className="bg-[#2d2d2d] rounded-lg overflow-hidden flex flex-col h-[calc(100vh-8rem)]">
+
           <div className="flex flex-col md:flex-row flex-1 gap-4 overflow-hidden">
-            {/* Editor Section */}
-            <div className="w-full md:w-1/2 p-2 flex flex-col min-h-[500px] overflow-hidden">
-              <EditorHeader
-                mode={mode}
-                settings={editorSettings}
-                onSettingsChange={setEditorSettings}
-                onImport={handleFileImport}
-                onCopy={handleCopyCode}
-                onDownload={handleDownloadCode}
-                onClear={() => {
-                  handleCodeChange('');
-                  setOutput('');
-                }}
-                fileInputRef={fileInputRef}
-              />
-              <Tabs
-                tabs={tabs}
-                activeTabId={activeTabId}
-                onTabChange={setActiveTabId}
-                onTabClose={handleCloseTab}
-                onNewTab={handleNewTab}
-                mode={mode}
-              />
-              {activeTab && (
-                <div className="flex-1 min-h-0">
-                  <Editor
-                    height="100%"
-                    language={mode}
-                    value={activeTab.code}
-                    theme={editorSettings.theme}
-                    onChange={handleCodeChange}
-                    options={{
-                      fontSize: editorSettings.fontSize,
-                      minimap: { enabled: editorSettings.minimap },
-                      wordWrap: editorSettings.wordWrap,
-                      scrollBeyondLastLine: false,
-                    }}
-                  />
+            <div className="flex flex-col gap-4 md:w-1/2">
+              {/* Editor Section */}
+              <div className="w-full p-2 flex flex-col min-h-[300px] overflow-hidden">
+                <EditorHeader
+                  mode={mode}
+                  settings={editorSettings}
+                  onSettingsChange={setEditorSettings}
+                  onImport={handleFileImport}
+                  onCopy={handleCopyCode}
+                  onDownload={handleDownloadCode}
+                  onClear={() => {
+                    handleCodeChange('');
+                    setOutput('');
+                  }}
+                  fileInputRef={fileInputRef}
+                />
+                <Tabs
+                  tabs={tabs}
+                  activeTabId={activeTabId}
+                  onTabChange={setActiveTabId}
+                  onTabClose={handleCloseTab}
+                  onNewTab={handleNewTab}
+                  mode={mode}
+                />
+                {activeTab && (
+                  <div className="flex-1 min-h-0">
+                    <Editor
+                      height="100%"
+                      language={mode}
+                      value={activeTab.code}
+                      theme={editorSettings.theme}
+                      onChange={handleCodeChange}
+                      options={{
+                        fontSize: editorSettings.fontSize,
+                        minimap: { enabled: editorSettings.minimap },
+                        wordWrap: editorSettings.wordWrap,
+                        scrollBeyondLastLine: false,
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Control Bar - Now below editor on mobile */}
+              <div className="bg-[#2d2d2d] p-4 flex flex-col gap-6 border-t border-gray-700 md:order-last">
+
+                <div className="w-full">
+                  <select 
+                    className="bg-[#1e1e1e] text-white px-4 py-2.5 rounded border border-gray-700 w-full text-sm"
+                    value={selectedExample}
+                    onChange={handleExampleChange}
+                  >
+                    <option value="user-code">User Code</option>
+                    {Object.entries(examples).map(([key, example]) => (
+                      <option key={key} value={key}>
+                        {example.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              )}
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                  <button
+                    onClick={handleRunAndUpdateCode}
+                    disabled={isLoading}
+                    className={`px-4 py-2.5 rounded flex items-center gap-2 justify-center text-sm font-medium transition-colors ${
+                      isLoading 
+                        ? 'bg-gray-600 cursor-not-allowed' 
+                        : 'bg-[#007acc] hover:bg-[#0066aa]'
+                    }`}
+                  >
+                    <Play size={16} />
+                    {isLoading ? 'Running...' : mode === 'json' ? 'Format JSON' : 'Run'}
+                  </button>
+                  
+                  <button 
+                    onClick={handleShareOnX}
+                    className="px-4 py-2.5 rounded border border-gray-700 hover:bg-gray-700 flex items-center gap-2 justify-center text-sm font-medium transition-colors"
+                    title="Share on X (Twitter)"
+                  >
+                    <Share2 size={16} />
+                    Share on X
+                  </button>
+                  
+                  <button 
+                    onClick={() => setIsManualVisible(!isManualVisible)}
+                    className={`px-4 py-2.5 rounded border border-gray-700 hover:bg-gray-700 flex items-center gap-2 justify-center text-sm font-medium transition-colors ${isManualVisible ? 'bg-gray-700' : ''}`}
+                    title="Toggle User Manual"
+                  >
+                    <HelpCircle size={16} />
+                    {isManualVisible ? 'Hide Manual' : 'Show Manual'}
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Terminal Output Section */}
-            <div className="w-full md:w-1/2 p-2 flex flex-col min-h-[500px] overflow-hidden">
-              <TerminalOutput
-                output={output}
-                isLoading={isLoading}
-                onClear={() => setOutput('')}
-                isMarkdown={mode === 'markdown'}
-              />
-            </div>
-          </div>
-
-          {/* Control Bar */}
-          <div className="bg-[#2d2d2d] p-4 flex flex-col gap-6 border-t border-gray-700">
-            <div className="w-full">
-              <select 
-                className="bg-[#1e1e1e] text-white px-4 py-2.5 rounded border border-gray-700 w-full text-sm"
-                value={selectedExample}
-                onChange={handleExampleChange}
-              >
-                <option value="user-code">User Code</option>
-                {Object.entries(examples).map(([key, example]) => (
-                  <option key={key} value={key}>
-                    {example.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-              <button
-                onClick={handleRunAndUpdateCode}
-                disabled={isLoading}
-                className={`px-4 py-2.5 rounded flex items-center gap-2 justify-center text-sm font-medium transition-colors ${
-                  isLoading 
-                    ? 'bg-gray-600 cursor-not-allowed' 
-                    : 'bg-[#007acc] hover:bg-[#0066aa]'
-                }`}
-              >
-                <Play size={16} />
-                {isLoading ? 'Running...' : mode === 'json' ? 'Format JSON' : 'Run'}
-              </button>
-              
-              <button 
-                onClick={handleShareOnX}
-                className="px-4 py-2.5 rounded border border-gray-700 hover:bg-gray-700 flex items-center gap-2 justify-center text-sm font-medium transition-colors"
-                title="Share on X (Twitter)"
-              >
-                <Share2 size={16} />
-                Share on X
-              </button>
-              
-              <button 
-                onClick={() => setIsManualVisible(!isManualVisible)}
-                className={`px-4 py-2.5 rounded border border-gray-700 hover:bg-gray-700 flex items-center gap-2 justify-center text-sm font-medium transition-colors ${isManualVisible ? 'bg-gray-700' : ''}`}
-                title="Toggle User Manual"
-              >
-                <HelpCircle size={16} />
-                {isManualVisible ? 'Hide Manual' : 'Show Manual'}
-              </button>
+            <div className="w-full md:w-1/2 p-2 flex flex-col flex-1 overflow-hidden">
+              <div className="h-full flex flex-col">
+                <TerminalOutput
+                  output={output}
+                  isLoading={isLoading}
+                  onClear={() => setOutput('')}
+                  isMarkdown={mode === 'markdown'}
+                />
+              </div>
             </div>
           </div>
         </div>
