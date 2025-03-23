@@ -211,10 +211,10 @@ function App() {
       <div className="container mx-auto p-4 pt-6 flex-1">
         <div className="bg-[#2d2d2d] rounded-lg overflow-hidden flex flex-col min-h-[calc(100vh-8rem)]">
 
-          <div className="flex flex-col md:flex-row flex-1 gap-4 overflow-hidden">
-            <div className="flex flex-col gap-4 md:w-1/2">
+          <div className="flex flex-col md:flex-row flex-1 gap-4 overflow-hidden p-2">
+            <div className="flex flex-col gap-4 md:w-1/2 flex-1">
               {/* Editor Section */}
-              <div className="w-full p-2 flex flex-col min-h-[300px] md:h-[calc(100vh-16rem)] overflow-hidden">
+              <div className="w-full h-[70vh] md:h-[calc(100vh-16rem)] flex flex-col overflow-hidden bg-[#1e1e1e] rounded-lg border border-[#333]">
                 <EditorHeader
                   mode={mode}
                   settings={editorSettings}
@@ -237,18 +237,20 @@ function App() {
                   mode={mode}
                 />
                 {activeTab && (
-                  <div className="flex-1 min-h-0">
+                  <div className="flex-1 h-full">
                     <Editor
                       height="100%"
                       language={mode}
                       value={activeTab.code}
                       theme={editorSettings.theme}
                       onChange={handleCodeChange}
+                      className="h-full"
                       options={{
                         fontSize: editorSettings.fontSize,
                         minimap: { enabled: editorSettings.minimap },
                         wordWrap: editorSettings.wordWrap,
                         scrollBeyondLastLine: false,
+                        automaticLayout: true
                       }}
                     />
                   </div>
