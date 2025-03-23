@@ -214,7 +214,7 @@ function App() {
           <div className="flex flex-col md:flex-row flex-1 gap-4 overflow-hidden">
             <div className="flex flex-col gap-4 md:w-1/2">
               {/* Editor Section */}
-              <div className="w-full p-2 flex flex-col min-h-[300px] overflow-hidden">
+              <div className="w-full p-2 flex flex-col min-h-[300px] md:h-[calc(100vh-16rem)] overflow-hidden">
                 <EditorHeader
                   mode={mode}
                   settings={editorSettings}
@@ -310,7 +310,7 @@ function App() {
 
             {/* Terminal Output Section */}
             <div className="w-full md:w-1/2 p-2 flex flex-col flex-1 overflow-visible">
-              <div className="flex flex-col">
+              <div className="flex flex-col h-full md:h-[calc(100vh-16rem)]">
                 <TerminalOutput
                   output={output}
                   isLoading={isLoading}
