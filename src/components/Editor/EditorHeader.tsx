@@ -39,7 +39,7 @@ export function EditorHeader({
   }, []);
 
   return (
-    <div className="flex flex-col space-y-2 mb-2 relative">
+    <div className="flex flex-col space-y-2 mb-2 relative bg-[#2d2d2d]">
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-400 font-medium">
           {mode === 'json' ? 'JSON Viewer' : mode === 'markdown' ? 'Markdown Editor' : 'Code Editor'}
