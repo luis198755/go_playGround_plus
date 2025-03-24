@@ -96,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({ mode, onModeChange }) => {
               <BookOpen size={20} strokeWidth={1.5} />
             </a>
             <a 
-              href="https://github.com/luis198755/go_playGround_Json" 
+              href="https://github.com/luis198755/go_playGround_plus" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-white transition-colors p-2 rounded-md"
@@ -152,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({ mode, onModeChange }) => {
                 <span>Documentation</span>
               </a>
               <a 
-                href="https://github.com/luis198755/go_playGround_Json" 
+                href="https://github.com/luis198755/go_playGround_plus" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white hover:bg-[#3d3d3d] rounded-md transition-colors text-sm"
