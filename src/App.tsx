@@ -214,7 +214,7 @@ function App() {
           <div className="flex flex-col md:flex-row flex-1 gap-4 overflow-hidden p-2">
             <div className="flex flex-col gap-4 md:w-1/2 flex-1">
               {/* Editor Section */}
-              <div className="w-full h-[70vh] md:h-[calc(100vh-16rem)] flex flex-col overflow-hidden bg-[#1e1e1e] rounded-lg border border-[#333]">
+              <div className="w-full h-[60vh] md:h-[calc(100vh-20.5rem)] flex flex-col overflow-hidden bg-[#1e1e1e] rounded-lg border border-[#333]">
                 <EditorHeader
                   mode={mode}
                   settings={editorSettings}
