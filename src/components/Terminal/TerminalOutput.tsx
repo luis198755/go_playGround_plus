@@ -67,7 +67,7 @@ export function TerminalOutput({ output, isLoading, onClear, isMarkdown = false 
   };
 
   return (
-    <div className="flex flex-col h-[500px] lg:h-[700px] min-h-0">
+    <div className="flex flex-col h-[700px] lg:h-[700px] min-h-0">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-sm text-gray-400 font-medium">
           <Terminal size={16} />
