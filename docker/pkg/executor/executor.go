@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -20,6 +21,7 @@ type GoExecutor struct {
 	goExecutablePath string
 	maxOutputLength  int
 	tempDir          string
+	bufferPool       sync.Pool
 }
 
 // NewGoExecutor crea un nuevo ejecutor de código Go
@@ -28,6 +30,13 @@ func NewGoExecutor(goExecutablePath string, maxOutputLength int, tempDir string)
 		goExecutablePath: goExecutablePath,
 		maxOutputLength:  maxOutputLength,
 		tempDir:          tempDir,
+		bufferPool: sync.Pool{
+			New: func() interface{} {
+				// Crear un buffer de 1KB por defecto
+				buf := make([]byte, 1024)
+				return &buf
+			},
+		},
 	}
 }
 
@@ -72,7 +81,14 @@ func (ge *GoExecutor) Execute(ctx context.Context, code string, output io.Writer
 	}
 
 	totalBytes := 0
-	buf := make([]byte, 1024)
+	
+	// Obtener un buffer del pool
+	bufPtr := ge.bufferPool.Get().(*[]byte)
+	buf := *bufPtr
+	
+	// Asegurar que el buffer se devuelva al pool
+	defer ge.bufferPool.Put(bufPtr)
+	
 	for {
 		n, err := stdoutPipe.Read(buf)
 		if n > 0 {

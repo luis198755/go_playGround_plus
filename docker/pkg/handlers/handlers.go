@@ -120,6 +120,9 @@ func (h *APIHandler) HandleExecuteCode(w http.ResponseWriter, r *http.Request) {
 
 	// Decodificar la solicitud
 	var codeReq CodeRequest
+	// Asegurar que el body se cierre adecuadamente
+	defer r.Body.Close()
+	
 	if err := json.NewDecoder(r.Body).Decode(&codeReq); err != nil {
 		reqLogger.Error("Error al decodificar la solicitud", zap.Error(err))
 		err := errors.BadRequest(
