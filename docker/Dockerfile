@@ -1,9 +1,13 @@
 # Etapa de compilación
 FROM golang:1.24.1-alpine AS builder
 WORKDIR /build
+# Copiar todos los archivos necesarios, incluyendo la carpeta pkg
 COPY ./server.go .
-RUN go mod init server
+COPY ./pkg ./pkg
+# Inicializar el módulo y sus dependencias
+RUN go mod init github.com/luis198755/go_playGround_plus/docker
 RUN go mod tidy
+# Compilar la aplicación
 RUN go build -o server
 
 # Etapa final

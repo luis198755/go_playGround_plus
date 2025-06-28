@@ -80,6 +80,6 @@ func (cv *CodeValidator) GetClientIP(r *http.Request) string {
 func (cv *CodeValidator) SetSecurityHeaders(w http.ResponseWriter) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("X-Frame-Options", "DENY")
-	w.Header().Set("Content-Security-Policy", "default-src 'self'")
+	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net; img-src 'self' https://go.dev data:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net")
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 }
