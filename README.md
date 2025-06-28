@@ -1,108 +1,139 @@
-# Go Playground
+# Go Playground Plus
 
-A modern, feature-rich web-based Go code editor and JSON viewer with real-time execution capabilities.
+Una plataforma moderna para ejecutar código Go en un entorno seguro y controlado, con una interfaz web basada en Monaco Editor.
 
-![Go Playground Screenshot](https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&q=80&w=1000)
+![Go Playground Plus Screenshot](https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&q=80&w=1000)
 
-## Features
+## Características Implementadas
 
-### Code Editor
-- **Dual Mode**: Switch between Go code editor and JSON viewer
-- **Syntax Highlighting**: Full syntax highlighting for both Go and JSON
-- **Real-time Execution**: Run Go code directly in the browser
-- **Multiple Tabs**: Work with multiple files simultaneously
-- **Code Examples**: Pre-loaded examples for both Go and JSON
-- **Auto-formatting**: Automatic code formatting for JSON
+### Arquitectura Modular
 
-### Editor Customization
-- **Themes**: Choose between light, dark, and high-contrast themes
-- **Font Size**: Adjustable font size for better readability
-- **Word Wrap**: Toggle word wrapping
-- **Minimap**: Optional code minimap for quick navigation
+- **Diseño por Paquetes**: Código organizado en paquetes separados (`config`, `limiter`, `security`, `executor`, `handlers`, `logger`, `errors`)
+- **Interfaces**: Uso de interfaces para mejorar modularidad y facilitar pruebas unitarias
+- **Inyección de Dependencias**: Componentes desacoplados e inyectados donde se necesitan
 
-### Terminal
-- **Real-time Output**: See your code's output in real-time
-- **Error Handling**: Clear error reporting and stack traces
-- **Command History**: Navigate through previous commands
-- **Export Options**: Download or copy terminal output
+### Seguridad
 
-### User Interface
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Intuitive Layout**: Clean and modern interface
-- **Keyboard Shortcuts**: Efficient keyboard navigation
-- **Customizable Settings**: Personalize your coding environment
+- **Validación de Código**: Análisis estático para detectar imports prohibidos usando el parser de Go
+- **Sanitización de Entradas**: Validación estricta del código recibido
+- **Límites de Ejecución**: Restricciones de tiempo y tamaño para el código ejecutado
+- **Content Security Policy (CSP)**: Configuración robusta para prevenir XSS y otras vulnerabilidades
+- **Headers de Seguridad**: X-Content-Type-Options, X-Frame-Options, etc.
+- **CORS**: Configuración adecuada para solicitudes cross-origin
+
+### Rendimiento
+
+- **Rate Limiting**: Algoritmo de Token Bucket para control de tráfico eficiente
+- **Pool de Buffers**: Uso de `sync.Pool` para reutilizar buffers y reducir la presión en el GC
+- **Gestión de Recursos**: Cierre adecuado de recursos con `defer`
+- **Timeout**: Control de tiempo máximo de ejecución para evitar bloqueos
+
+### Logging y Manejo de Errores
+
+- **Logging Estructurado**: Implementación con zap para logs eficientes y estructurados
+- **Contexto en Errores**: Información adicional para facilitar debugging
+- **Centralización**: Manejo centralizado de errores HTTP
+
+### Despliegue
+
+- **Containerización**: Configuración Docker optimizada
+- **Docker Compose**: Orquestación de servicios
+- **Volúmenes**: Montaje adecuado de archivos estáticos
+- **Variables de Entorno**: Configuración externalizada
+
+### Frontend
+
+- **Monaco Editor**: Editor de código avanzado (mismo que usa VS Code)
+- **Interfaz Moderna**: Diseño limpio y responsive con Tailwind CSS
+- **Ejecución en Tiempo Real**: Visualización inmediata de resultados
 
 ## Getting Started
 
 1. Clone the repository:
+
    ```bash
-   git clone https://github.com/yourusername/go-playground.git
+   git clone https://github.com/yourusername/go-playground-plus.git
    ```
 
-2. Install dependencies:
+2. Navigate to the docker directory:
+
    ```bash
-   npm install
+   cd go-playground-plus/docker
    ```
 
-3. Start the development server:
+3. Start the application with Docker Compose:
+
    ```bash
-   npm run dev
+   docker compose up -d
    ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+4. Open your browser and navigate to `http://localhost:8080`
 
-## Usage
+## Uso
 
-### Go Playground Mode
-1. Select "Go Playground" mode
-2. Choose from pre-loaded examples or create a new file
-3. Write or modify Go code
-4. Click "Run" to execute the code
-5. View output in the terminal panel
+### Ejecución de Código Go
 
-### JSON Viewer Mode
-1. Switch to "JSON Viewer" mode
-2. Input or paste JSON data
-3. Click "Format JSON" to auto-format
-4. View validation results in real-time
+1. Escribe tu código Go en el editor
+2. Haz clic en "Run" para ejecutar el código
+3. Visualiza la salida en el panel de resultados
+4. Los errores se mostrarán claramente en la consola
 
-## Technology Stack
+### Características del Editor
+
+1. Resaltado de sintaxis
+2. Autocompletado
+3. Detección de errores
+4. Soporte para temas claro/oscuro
+
+## Stack Tecnológico
+
+- **Backend**:
+
+  - Go 1.21+
+  - Arquitectura modular con interfaces
+  - Logging estructurado (zap)
+  - Manejo avanzado de errores
 
 - **Frontend**:
+
   - React 18
   - TypeScript
   - Tailwind CSS
   - Monaco Editor
   - Lucide Icons
 
-- **Features**:
-  - Real-time code execution
-  - Syntax highlighting
-  - Multiple file support
-  - Terminal emulation
-  - Responsive design
+- **Infraestructura**:
 
-## Contributing
+  - Docker
+  - Docker Compose
+  - Volúmenes persistentes
+  - Configuración por variables de entorno
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## Contribuir
 
-## License
+1. Haz un fork del repositorio
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+2. Crea tu rama de funcionalidad (`git checkout -b feature/NuevaFuncionalidad`)
 
-## Acknowledgments
+3. Haz commit de tus cambios (`git commit -m 'Añadir nueva funcionalidad'`)
 
-- [Go](https://go.dev/) - The Go Programming Language
-- [Monaco Editor](https://microsoft.github.io/monaco-editor/) - The code editor that powers VS Code
-- [Tailwind CSS](https://tailwindcss.com/) - For the utility-first CSS framework
-- [Lucide](https://lucide.dev/) - Beautiful & consistent icons
+4. Sube los cambios a tu rama (`git push origin feature/NuevaFuncionalidad`)
 
-## Contact
+5. Abre un Pull Request
 
-Your Name - [@yourusername](https://twitter.com/yourusername)
+## Licencia
 
-Project Link: [https://github.com/yourusername/go-playground](https://github.com/yourusername/go-playground)
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## Agradecimientos
+
+- [Go](https://go.dev/) - El lenguaje de programación Go
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) - El editor de código que impulsa VS Code
+- [Tailwind CSS](https://tailwindcss.com/) - Framework CSS basado en utilidades
+- [Lucide](https://lucide.dev/) - Iconos consistentes y hermosos
+
+## Contacto
+
+Tu Nombre - [@tuusuario](https://twitter.com/tuusuario)
+
+Project Link: [https://github.com/yourusername/go-playground-plus](https://github.com/yourusername/go-playground-plus)
