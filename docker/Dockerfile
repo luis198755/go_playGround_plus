@@ -1,5 +1,5 @@
 # Etapa de compilación
-FROM golang:1.25-alpine AS builder
+FROM golang:1.24.1-alpine AS builder
 WORKDIR /build
 COPY ./server.go .
 RUN go mod init server
@@ -7,7 +7,7 @@ RUN go mod tidy
 RUN go build -o server
 
 # Etapa final
-FROM golang:1.25-alpine
+FROM golang:1.24.1-alpine
 WORKDIR /app
 COPY ./playground_files ./playground_files
 COPY --from=builder /build/server .
