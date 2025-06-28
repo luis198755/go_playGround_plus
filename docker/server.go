@@ -10,13 +10,19 @@ import (
 	"github.com/luis198755/go_playGround_plus/docker/pkg/executor"
 	"github.com/luis198755/go_playGround_plus/docker/pkg/handlers"
 	"github.com/luis198755/go_playGround_plus/docker/pkg/limiter"
+	"github.com/luis198755/go_playGround_plus/docker/pkg/logger"
 	"github.com/luis198755/go_playGround_plus/docker/pkg/security"
+	"go.uber.org/zap"
 )
 
 // Variables globales y constantes se han movido a los paquetes correspondientes
 
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.LUTC)
+
+	// Inicializar logger estructurado
+	appLogger := logger.NewLogger(true) // true para modo desarrollo
+	appLogger.Info("Iniciando servidor Go Playground Plus", zap.String("version", "1.0.0"))
 
 	// Cargar configuración
 	cfg := config.NewConfig()
@@ -40,6 +46,7 @@ func main() {
 		rateLimiter,
 		securityValidator,
 		codeExecutor,
+		appLogger,
 		cfg.MaxCodeLength,
 		cfg.ExecutionTimeout,
 	)
@@ -51,12 +58,17 @@ func main() {
 	fileServer := handlers.NewFileServer("build", securityValidator)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		clientIP := securityValidator.GetClientIP(r)
-		log.Printf("[IP: %s] Recibida petición: %s %s", clientIP, r.Method, r.URL.Path)
+		appLogger.Info("Petición recibida", 
+			zap.String("ip", clientIP),
+			zap.String("method", r.Method),
+			zap.String("path", r.URL.Path))
 
 		path := filepath.Join("build", r.URL.Path)
 		_, err := os.Stat(path)
 		if os.IsNotExist(err) {
-			log.Printf("[IP: %s] Archivo no encontrado: %s, sirviendo index.html", clientIP, r.URL.Path)
+			appLogger.Info("Archivo no encontrado, sirviendo index.html", 
+				zap.String("ip", clientIP),
+				zap.String("path", r.URL.Path))
 			http.ServeFile(w, r, "build/index.html")
 			return
 		}
@@ -65,7 +77,7 @@ func main() {
 	})
 
 	// Iniciar servidor
-	log.Printf("Servidor iniciado en puerto :%s\n", cfg.Port)
+	appLogger.Info("Servidor iniciado", zap.String("port", cfg.Port))
 	if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
 		log.Fatal(err)
 	}

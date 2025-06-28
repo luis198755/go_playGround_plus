@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/luis198755/go_playGround_plus/docker/pkg/errors"
 	"github.com/luis198755/go_playGround_plus/docker/pkg/executor"
 	"github.com/luis198755/go_playGround_plus/docker/pkg/limiter"
+	"github.com/luis198755/go_playGround_plus/docker/pkg/logger"
 	"github.com/luis198755/go_playGround_plus/docker/pkg/security"
+	"go.uber.org/zap"
 )
 
 // CodeRequest representa la solicitud de ejecución de código
@@ -30,6 +32,7 @@ type APIHandler struct {
 	limiter          limiter.RateLimiterInterface
 	security         security.SecurityValidator
 	executor         executor.CodeExecutor
+	logger           logger.Logger
 	maxCodeLength    int
 	executionTimeout int // en segundos
 }
@@ -39,6 +42,7 @@ func NewAPIHandler(
 	limiter limiter.RateLimiterInterface,
 	security security.SecurityValidator,
 	executor executor.CodeExecutor,
+	log logger.Logger,
 	maxCodeLength int,
 	executionTimeout int,
 ) *APIHandler {
@@ -46,6 +50,7 @@ func NewAPIHandler(
 		limiter:          limiter,
 		security:         security,
 		executor:         executor,
+		logger:           log,
 		maxCodeLength:    maxCodeLength,
 		executionTimeout: executionTimeout,
 	}
@@ -53,23 +58,48 @@ func NewAPIHandler(
 
 // HandleExecuteCode maneja las solicitudes de ejecución de código
 func (h *APIHandler) HandleExecuteCode(w http.ResponseWriter, r *http.Request) {
+	// Crear logger con contexto para esta solicitud
+	reqLogger := h.logger.With(
+		zap.String("client_ip", h.security.GetClientIP(r)),
+		zap.String("method", r.Method),
+		zap.String("path", r.URL.Path),
+	)
+
 	// Verificar método HTTP
 	if r.Method != http.MethodPost {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		err := errors.WithContext(
+			errors.New("método no permitido"),
+			http.StatusMethodNotAllowed,
+			"Método no permitido",
+			map[string]interface{}{"method": r.Method},
+		)
+		errors.HTTPError(w, r, reqLogger, err)
 		return
 	}
 
 	// Rate limiting
 	clientIP := h.security.GetClientIP(r)
 	if !h.limiter.IsAllowed(clientIP) {
-		log.Printf("[SECURITY] Rate limit exceeded for IP: %s", clientIP)
-		http.Error(w, "Demasiadas peticiones. Por favor, espere un minuto.", http.StatusTooManyRequests)
+		reqLogger.Warn("Rate limit exceeded",
+			zap.String("client_ip", clientIP),
+		)
+		err := errors.TooManyRequests(
+			errors.New("rate limit exceeded"),
+			"Demasiadas peticiones. Por favor, espere un minuto.",
+			map[string]interface{}{"client_ip": clientIP},
+		)
+		errors.HTTPError(w, r, reqLogger, err)
 		return
 	}
 
 	// Verificar Content-Type
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
-		http.Error(w, "Content-Type debe ser application/json", http.StatusUnsupportedMediaType)
+		err := errors.BadRequest(
+			errors.New("content-type inválido"),
+			"Content-Type debe ser application/json",
+			map[string]interface{}{"content_type": r.Header.Get("Content-Type")},
+		)
+		errors.HTTPError(w, r, reqLogger, err)
 		return
 	}
 
@@ -79,30 +109,50 @@ func (h *APIHandler) HandleExecuteCode(w http.ResponseWriter, r *http.Request) {
 	// Verificar que el ResponseWriter soporte flushing
 	flusher, ok := w.(http.Flusher)
 	if !ok {
-		http.Error(w, "Streaming no soportado", http.StatusInternalServerError)
+		err := errors.InternalServerError(
+			errors.New("streaming no soportado"),
+			"El servidor no soporta streaming de respuestas",
+			nil,
+		)
+		errors.HTTPError(w, r, reqLogger, err)
 		return
 	}
 
 	// Decodificar la solicitud
 	var codeReq CodeRequest
 	if err := json.NewDecoder(r.Body).Decode(&codeReq); err != nil {
-		log.Printf("Error al decodificar la solicitud: %v", err)
-		http.Error(w, "Solicitud inválida", http.StatusBadRequest)
+		reqLogger.Error("Error al decodificar la solicitud", zap.Error(err))
+		err := errors.BadRequest(
+			errors.Wrap(err, "error al decodificar JSON"),
+			"Solicitud inválida",
+			nil,
+		)
+		errors.HTTPError(w, r, reqLogger, err)
 		return
 	}
 
 	// Validar el código
 	if codeReq.Code == "" {
+		reqLogger.Warn("Código vacío recibido")
 		fmt.Fprint(w, "Error: El código no puede estar vacío")
 		flusher.Flush()
 		return
 	}
+
 	if len(codeReq.Code) > h.maxCodeLength {
+		reqLogger.Warn("Código excede límite de tamaño",
+			zap.Int("code_length", len(codeReq.Code)),
+			zap.Int("max_length", h.maxCodeLength),
+		)
 		fmt.Fprintf(w, "Error: El código excede el límite de %d bytes", h.maxCodeLength)
 		flusher.Flush()
 		return
 	}
+
 	if hasBlacklisted, pkg := h.security.ContainsBlacklistedImports(codeReq.Code); hasBlacklisted {
+		reqLogger.Warn("Intento de usar import prohibido",
+			zap.String("blacklisted_package", pkg),
+		)
 		fmt.Fprintf(w, "Error: Import prohibido por seguridad: %s", pkg)
 		flusher.Flush()
 		return
@@ -112,11 +162,22 @@ func (h *APIHandler) HandleExecuteCode(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(h.executionTimeout)*time.Second)
 	defer cancel()
 
+	// Registrar ejecución
+	reqLogger.Info("Ejecutando código Go",
+		zap.Int("code_length", len(codeReq.Code)),
+		zap.Int("timeout_seconds", h.executionTimeout),
+	)
+
 	// Ejecutar el código
 	err := h.executor.Execute(ctx, codeReq.Code, w)
 	if err != nil {
+		reqLogger.Error("Error al ejecutar código", 
+			zap.Error(errors.Wrap(err, "error de ejecución")),
+		)
 		fmt.Fprintf(w, "\nError: %v", err)
 		flusher.Flush()
+	} else {
+		reqLogger.Info("Código ejecutado correctamente")
 	}
 }
 
