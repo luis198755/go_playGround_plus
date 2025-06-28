@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -20,14 +21,17 @@ import (
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.LUTC)
 
-	// Inicializar logger estructurado
-	appLogger := logger.NewLogger(true) // true para modo desarrollo
-	appLogger.Info("Iniciando servidor Go Playground Plus", zap.String("version", "1.0.0"))
-
 	// Cargar configuración
 	cfg := config.NewConfig()
+
+	// Inicializar logger estructurado con nivel basado en configuración
+	debugMode := cfg.DebugMode
+	appLogger := logger.NewLogger(debugMode)
+	appLogger.Info("Iniciando servidor Go Playground Plus", 
+		zap.String("version", "1.0.0"),
+		zap.String("config", cfg.String()))
 	
-	// Configurar variables de entorno
+	// Configurar variables de entorno para la ejecución del código Go
 	essentialEnvVars := config.GetEssentialEnvVars()
 	os.Clearenv()
 	for key, value := range essentialEnvVars {
@@ -38,8 +42,21 @@ func main() {
 
 	// Inicializar componentes
 	securityValidator := security.NewCodeValidator()
+	
+	// Inicializar rate limiter con configuración
 	rateLimiter := limiter.NewRateLimiter(cfg.MaxRequestsPerMinute)
-	codeExecutor := executor.NewGoExecutor(cfg.GoExecutablePath, cfg.MaxOutputLength, cfg.TempDir)
+	appLogger.Info("Rate limiter configurado", 
+		zap.Int("max_requests_per_minute", cfg.MaxRequestsPerMinute))
+	
+	// Inicializar ejecutor de código
+	codeExecutor := executor.NewGoExecutor(
+		cfg.GoExecutablePath, 
+		cfg.MaxOutputLength, 
+		cfg.TempDir,
+	)
+	appLogger.Info("Ejecutor de código configurado", 
+		zap.String("go_path", cfg.GoExecutablePath),
+		zap.String("temp_dir", cfg.TempDir))
 	
 	// Inicializar handlers
 	apiHandler := handlers.NewAPIHandler(
@@ -54,9 +71,26 @@ func main() {
 	// Configurar rutas
 	http.HandleFunc("/api/execute", apiHandler.HandleExecuteCode)
 	
-	// Servir archivos estáticos
-	// Usar ruta absoluta para archivos estáticos en Docker
-	staticDir := "/app/build"
+	// Servir archivos estáticos desde la ruta configurada
+	staticDir := cfg.StaticFilesDir
+	appLogger.Info("Configurando servidor de archivos estáticos", 
+		zap.String("static_dir", staticDir))
+	
+	// Verificar que el directorio de archivos estáticos exista
+	if _, err := os.Stat(staticDir); os.IsNotExist(err) {
+		appLogger.Error("El directorio de archivos estáticos no existe", 
+			zap.String("static_dir", staticDir),
+			zap.Error(err))
+		// Intentar crear el directorio
+		if err := os.MkdirAll(staticDir, 0755); err != nil {
+			appLogger.Fatal("No se pudo crear el directorio de archivos estáticos", 
+				zap.String("static_dir", staticDir),
+				zap.Error(err))
+		}
+		appLogger.Info("Directorio de archivos estáticos creado", 
+			zap.String("static_dir", staticDir))
+	}
+	
 	fileServer := handlers.NewFileServer(staticDir, securityValidator)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		clientIP := securityValidator.GetClientIP(r)
@@ -81,8 +115,14 @@ func main() {
 	})
 
 	// Iniciar servidor
-	appLogger.Info("Servidor iniciado", zap.String("port", cfg.Port))
-	if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
-		log.Fatal(err)
+	serverAddr := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
+	appLogger.Info("Servidor iniciado", 
+		zap.String("address", serverAddr),
+		zap.String("static_dir", staticDir))
+	
+	if err := http.ListenAndServe(serverAddr, nil); err != nil {
+		appLogger.Fatal("Error al iniciar el servidor", 
+			zap.String("address", serverAddr),
+			zap.Error(err))
 	}
 }

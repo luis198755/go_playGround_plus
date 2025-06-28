@@ -34,7 +34,7 @@ type APIHandler struct {
 	executor         executor.CodeExecutor
 	logger           logger.Logger
 	maxCodeLength    int
-	executionTimeout int // en segundos
+	executionTimeout time.Duration
 }
 
 // NewAPIHandler crea un nuevo manejador de API
@@ -44,7 +44,7 @@ func NewAPIHandler(
 	executor executor.CodeExecutor,
 	log logger.Logger,
 	maxCodeLength int,
-	executionTimeout int,
+	executionTimeout time.Duration,
 ) *APIHandler {
 	return &APIHandler{
 		limiter:          limiter,
@@ -162,13 +162,13 @@ func (h *APIHandler) HandleExecuteCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Crear contexto con timeout
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(h.executionTimeout)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), h.executionTimeout)
 	defer cancel()
 
 	// Registrar ejecución
 	reqLogger.Info("Ejecutando código Go",
 		zap.Int("code_length", len(codeReq.Code)),
-		zap.Int("timeout_seconds", h.executionTimeout),
+		zap.Duration("timeout", h.executionTimeout),
 	)
 
 	// Ejecutar el código
