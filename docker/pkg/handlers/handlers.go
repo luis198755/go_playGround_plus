@@ -185,6 +185,7 @@ func (h *APIHandler) HandleExecuteCode(w http.ResponseWriter, r *http.Request) {
 type FileServer struct {
 	fs      http.Handler
 	security security.SecurityValidator
+	root     string
 }
 
 // NewFileServer crea un nuevo servidor de archivos estáticos
@@ -192,11 +193,27 @@ func NewFileServer(root string, security security.SecurityValidator) *FileServer
 	return &FileServer{
 		fs:      http.FileServer(http.Dir(root)),
 		security: security,
+		root:     root,
 	}
 }
 
 // ServeHTTP implementa la interfaz http.Handler
 func (fs *FileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Establecer encabezados de seguridad
 	fs.security.SetSecurityHeaders(w)
+	
+	// Establecer el tipo de contenido correcto según la extensión del archivo
+	path := r.URL.Path
+	if strings.HasSuffix(path, ".css") {
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+	} else if strings.HasSuffix(path, ".js") {
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+	} else if strings.HasSuffix(path, ".svg") {
+		w.Header().Set("Content-Type", "image/svg+xml")
+	} else if strings.HasSuffix(path, ".html") {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	}
+	
+	// Servir el archivo
 	fs.fs.ServeHTTP(w, r)
 }

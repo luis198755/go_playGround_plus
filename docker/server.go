@@ -55,7 +55,9 @@ func main() {
 	http.HandleFunc("/api/execute", apiHandler.HandleExecuteCode)
 	
 	// Servir archivos estáticos
-	fileServer := handlers.NewFileServer("build", securityValidator)
+	// Usar ruta absoluta para archivos estáticos en Docker
+	staticDir := "/app/build"
+	fileServer := handlers.NewFileServer(staticDir, securityValidator)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		clientIP := securityValidator.GetClientIP(r)
 		appLogger.Info("Petición recibida", 
@@ -63,16 +65,18 @@ func main() {
 			zap.String("method", r.Method),
 			zap.String("path", r.URL.Path))
 
-		path := filepath.Join("build", r.URL.Path)
+		path := filepath.Join(staticDir, r.URL.Path)
 		_, err := os.Stat(path)
 		if os.IsNotExist(err) {
 			appLogger.Info("Archivo no encontrado, sirviendo index.html", 
 				zap.String("ip", clientIP),
 				zap.String("path", r.URL.Path))
-			http.ServeFile(w, r, "build/index.html")
+			http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
 			return
 		}
-		log.Printf("[IP: %s] Sirviendo archivo: %s", clientIP, r.URL.Path)
+		appLogger.Info("Sirviendo archivo", 
+			zap.String("ip", clientIP),
+			zap.String("path", r.URL.Path))
 		fileServer.ServeHTTP(w, r)
 	})
 
