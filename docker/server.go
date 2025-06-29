@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/luis198755/go_playGround_plus/docker/pkg/config"
 	"github.com/luis198755/go_playGround_plus/docker/pkg/executor"
@@ -17,6 +19,16 @@ import (
 )
 
 // Variables globales y constantes se han movido a los paquetes correspondientes
+
+// getEnvInt obtiene una variable de entorno int o devuelve el valor por defecto
+func getEnvInt(key string, defaultValue int) int {
+	if value, exists := os.LookupEnv(key); exists && value != "" {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
+}
 
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.LUTC)
@@ -33,27 +45,50 @@ func main() {
 	
 	// Configurar variables de entorno para la ejecución del código Go
 	essentialEnvVars := config.GetEssentialEnvVars()
-	os.Clearenv()
+	appLogger.Info("Configurando variables de entorno para ejecución de código")
+	
+	// En lugar de limpiar todas las variables de entorno (os.Clearenv),
+	// establecemos solo las variables esenciales que necesitamos
 	for key, value := range essentialEnvVars {
 		if value != "" {
 			os.Setenv(key, value)
+			appLogger.Debug("Variable de entorno configurada", 
+				zap.String("key", key))
 		}
 	}
 
 	// Inicializar componentes
 	securityValidator := security.NewCodeValidator()
 	
+	// Verificar que el directorio temporal existe
+	if _, err := os.Stat(cfg.TempDir); os.IsNotExist(err) {
+		appLogger.Info("Creando directorio temporal", zap.String("dir", cfg.TempDir))
+		if err := os.MkdirAll(cfg.TempDir, 0755); err != nil {
+			appLogger.Fatal("Error al crear directorio temporal", zap.Error(err))
+		}
+	}
+	
 	// Inicializar rate limiter con configuración
 	rateLimiter := limiter.NewRateLimiter(cfg.MaxRequestsPerMinute)
 	appLogger.Info("Rate limiter configurado", 
 		zap.Int("max_requests_per_minute", cfg.MaxRequestsPerMinute))
 	
-	// Inicializar ejecutor de código
-	codeExecutor := executor.NewGoExecutor(
-		cfg.GoExecutablePath, 
-		cfg.MaxOutputLength, 
+	// Inicializar ejecutor de código Go
+	baseExecutor := executor.NewGoExecutor(
+		cfg.GoExecutablePath,
+		cfg.MaxOutputLength,
 		cfg.TempDir,
 	)
+	
+	// Configurar el ejecutor con caché
+	maxCacheSize := getEnvInt("MAX_CACHE_SIZE", 100) // Número máximo de entradas en caché
+	cacheTTL := time.Duration(getEnvInt("CACHE_TTL_MINUTES", 30)) * time.Minute
+	
+	appLogger.Info("Configurando caché de ejecución", 
+		zap.Int("max_size", maxCacheSize),
+		zap.Duration("ttl", cacheTTL))
+		
+	codeExecutor := executor.NewCachedExecutor(baseExecutor, maxCacheSize, cacheTTL)
 	appLogger.Info("Ejecutor de código configurado", 
 		zap.String("go_path", cfg.GoExecutablePath),
 		zap.String("temp_dir", cfg.TempDir))
