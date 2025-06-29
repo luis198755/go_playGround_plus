@@ -1,3 +1,24 @@
+// Package executor proporciona funcionalidades para ejecutar código Go de forma segura.
+//
+// Este paquete implementa diferentes ejecutores de código que permiten ejecutar
+// código Go en un entorno controlado, con límites de tiempo y recursos.
+// También proporciona un sistema de caché para optimizar ejecuciones repetidas.
+//
+// Ejemplo de uso básico:
+//
+//     // Crear un ejecutor básico
+//     baseExecutor := executor.NewGoExecutor("/usr/local/go/bin/go", 10000, "/tmp")
+//
+//     // Envolver con caché para optimizar ejecuciones repetidas
+//     cachedExecutor := executor.NewCachedExecutor(baseExecutor, 100, 30*time.Minute)
+//
+//     // Ejecutar código
+//     var output bytes.Buffer
+//     err := cachedExecutor.Execute(context.Background(), "package main\n\nfunc main() {\n\tfmt.Println(\"Hello, World!\")\n}", &output)
+//     if err != nil {
+//         log.Fatalf("Error ejecutando código: %v", err)
+//     }
+//     fmt.Println(output.String())
 package executor
 
 import (
@@ -9,14 +30,19 @@ import (
 	"time"
 )
 
-// CacheEntry representa una entrada en el caché
+// CacheEntry representa una entrada en el caché de ejecuciones.
+// Contiene el resultado de la ejecución, la última vez que fue accedida
+// y un contador de accesos para estadísticas y políticas de reemplazo.
 type CacheEntry struct {
 	Result      []byte
 	LastAccess  time.Time
 	AccessCount int
 }
 
-// CachedExecutor implementa un ejecutor con caché para código frecuentemente ejecutado
+// CachedExecutor implementa un ejecutor con caché para código frecuentemente ejecutado.
+// Utiliza un sistema de caché basado en el hash SHA-256 del código fuente para
+// identificar ejecuciones idénticas y evitar la re-ejecución innecesaria.
+// Incluye políticas de expiración (TTL) y reemplazo (LRU) para gestionar el tamaño del caché.
 type CachedExecutor struct {
 	executor     CodeExecutor
 	cache        map[string]*CacheEntry
@@ -25,7 +51,18 @@ type CachedExecutor struct {
 	ttl          time.Duration
 }
 
-// NewCachedExecutor crea un nuevo ejecutor con caché
+// NewCachedExecutor crea un nuevo ejecutor con caché que envuelve a otro ejecutor.
+//
+// Parámetros:
+//   - executor: El ejecutor base que se utilizará para las ejecuciones que no estén en caché.
+//   - maxCacheSize: El número máximo de entradas que se almacenarán en el caché.
+//   - ttl: El tiempo de vida de las entradas en el caché antes de ser consideradas expiradas.
+//
+// Ejemplo:
+//
+//     baseExecutor := executor.NewGoExecutor("/usr/local/go/bin/go", 10000, os.TempDir())
+//     cachedExecutor := executor.NewCachedExecutor(baseExecutor, 100, 30*time.Minute)
+//     // Ahora cachedExecutor puede usarse como cualquier otro CodeExecutor
 func NewCachedExecutor(executor CodeExecutor, maxCacheSize int, ttl time.Duration) *CachedExecutor {
 	ce := &CachedExecutor{
 		executor:     executor,
@@ -40,7 +77,27 @@ func NewCachedExecutor(executor CodeExecutor, maxCacheSize int, ttl time.Duratio
 	return ce
 }
 
-// Execute ejecuta el código, utilizando el caché si está disponible
+// Execute ejecuta el código Go, utilizando el caché si está disponible.
+// Si el código ya ha sido ejecutado anteriormente y la entrada no ha expirado,
+// devuelve el resultado almacenado en caché. De lo contrario, ejecuta el código
+// utilizando el ejecutor base y almacena el resultado en el caché para futuras ejecuciones.
+//
+// Parámetros:
+//   - ctx: Contexto para control de cancelación y timeout.
+//   - code: El código Go a ejecutar.
+//   - output: Writer donde se escribirá la salida de la ejecución.
+//
+// Retorna error si hay algún problema durante la ejecución.
+//
+// Ejemplo:
+//
+//     var output bytes.Buffer
+//     err := cachedExecutor.Execute(ctx, "fmt.Println(\"Hello\");", &output)
+//     if err != nil {
+//         log.Printf("Error: %v", err)
+//     } else {
+//         fmt.Println("Resultado:", output.String())
+//     }
 func (ce *CachedExecutor) Execute(ctx context.Context, code string, output io.Writer) error {
 	// Generar hash del código como clave del caché
 	codeHash := ce.hashCode(code)
@@ -100,14 +157,17 @@ func (ce *CachedExecutor) Execute(ctx context.Context, code string, output io.Wr
 	return nil
 }
 
-// hashCode genera un hash SHA-256 del código
+// hashCode genera un hash SHA-256 del código.
+// Este hash se utiliza como clave para identificar entradas únicas en el caché.
 func (ce *CachedExecutor) hashCode(code string) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(code))
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-// updateCacheStats actualiza las estadísticas de uso del caché
+// updateCacheStats actualiza las estadísticas de uso del caché.
+// Incrementa el contador de accesos y actualiza el timestamp de último acceso.
+// Esta información se utiliza para la política de reemplazo LRU.
 func (ce *CachedExecutor) updateCacheStats(codeHash string) {
 	ce.cacheMutex.Lock()
 	defer ce.cacheMutex.Unlock()
@@ -118,7 +178,9 @@ func (ce *CachedExecutor) updateCacheStats(codeHash string) {
 	}
 }
 
-// evictLeastRecentlyUsed elimina la entrada menos recientemente usada del caché
+// evictLeastRecentlyUsed elimina la entrada menos recientemente usada del caché.
+// Se llama cuando el caché está lleno y es necesario hacer espacio para una nueva entrada.
+// Implementa la política de reemplazo Least Recently Used (LRU).
 func (ce *CachedExecutor) evictLeastRecentlyUsed() {
 	var oldestKey string
 	var oldestTime time.Time
@@ -144,7 +206,8 @@ func (ce *CachedExecutor) evictLeastRecentlyUsed() {
 	}
 }
 
-// cleanupRoutine limpia periódicamente las entradas expiradas del caché
+// cleanupRoutine limpia periódicamente las entradas expiradas del caché.
+// Se ejecuta en una goroutine separada y se activa cada ttl/2 tiempo.
 func (ce *CachedExecutor) cleanupRoutine() {
 	ticker := time.NewTicker(ce.ttl / 2)
 	defer ticker.Stop()
@@ -154,7 +217,8 @@ func (ce *CachedExecutor) cleanupRoutine() {
 	}
 }
 
-// cleanupCache elimina las entradas expiradas del caché
+// cleanupCache elimina las entradas expiradas del caché.
+// Una entrada se considera expirada si ha pasado más tiempo que el TTL desde su último acceso.
 func (ce *CachedExecutor) cleanupCache() {
 	ce.cacheMutex.Lock()
 	defer ce.cacheMutex.Unlock()
@@ -167,12 +231,14 @@ func (ce *CachedExecutor) cleanupCache() {
 	}
 }
 
-// cachingWriter es un escritor que almacena los datos en un buffer
+// cachingWriter es un escritor que almacena los datos en un buffer.
+// Se utiliza para capturar la salida de la ejecución y almacenarla en el caché.
 type cachingWriter struct {
 	buffer []byte
 }
 
-// Write implementa la interfaz io.Writer
+// Write implementa la interfaz io.Writer.
+// Almacena los datos escritos en el buffer interno para su posterior almacenamiento en el caché.
 func (cw *cachingWriter) Write(p []byte) (n int, err error) {
 	cw.buffer = append(cw.buffer, p...)
 	return len(p), nil
