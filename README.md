@@ -121,6 +121,76 @@ Una plataforma moderna para ejecutar código Go en un entorno seguro y controlad
 
 5. Abre un Pull Request
 
+## API Endpoints
+
+Go Playground Plus expone un endpoint API para ejecutar código Go programáticamente.
+
+### POST /api/execute
+
+Este endpoint permite ejecutar código Go y recibir la salida o errores de ejecución.
+
+#### Ejemplo de uso con curl
+
+```bash
+curl -X POST http://localhost:8080/api/execute \
+  -H "Content-Type: application/json" \
+  -d '{"code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n  fmt.Println(\"¡Hola desde la API de Go Playground Plus!\")\n}"}'
+```
+
+#### Ejemplo de uso con JavaScript (fetch)
+
+```javascript
+async function ejecutarCodigo() {
+  const codigo = `package main
+
+import "fmt"
+
+func main() {
+  fmt.Println("¡Hola desde la API de Go Playground Plus!")
+}`;
+
+  const respuesta = await fetch('http://localhost:8080/api/execute', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ code: codigo })
+  });
+
+  const resultado = await respuesta.text();
+  console.log(resultado);
+}
+
+ejecutarCodigo();
+```
+
+#### Respuesta esperada
+
+```text
+¡Hola desde la API de Go Playground Plus!
+```
+
+#### Ejemplo con errores
+
+```bash
+curl -X POST http://localhost:8080/api/execute \
+  -H "Content-Type: application/json" \
+  -d '{"code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n  fmt.Println(\"Esto tiene un error\"\n}"}'
+```
+
+#### Respuesta con error
+
+```text
+./prog.go:6:34: syntax error: unexpected newline, expecting comma or )
+```
+
+#### Notas importantes
+
+- El endpoint tiene un límite de tamaño para el código enviado.
+- Algunos imports están prohibidos por razones de seguridad.
+- Existe un rate limiting para prevenir abuso.
+- El tiempo de ejecución está limitado para evitar código que se ejecute indefinidamente.
+
 ## Licencia
 
 Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
